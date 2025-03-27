@@ -128,35 +128,7 @@ void AMCube::DeActivateRotationPlane()
 	CurrentPlaneType = EMCubePlane::AllPlanes;
 }
 
-TArray<AMCubeLet*> AMCube::GetAllCubeLetsInPlane(EMCubePlane PlaneType, double PlaneOffset)
-{
-	TArray<AMCubeLet*> CubeLetsInPlane;
-	auto IsPlanarCube = [this, &CubeLetsInPlane, &PlaneType, &PlaneOffset](const AMCubeLet* CubeLet)->bool
-	{
-		switch (PlaneType)
-		{
-			case EMCubePlane::XPlane:
-				return (CubeLet->GetActorLocation().X - this->GetActorLocation().X) == PlaneOffset;
 
-			case EMCubePlane::YPlane:
-				return (CubeLet->GetActorLocation().Y - this->GetActorLocation().Y) == PlaneOffset;
-
-			case EMCubePlane::ZPlane:
-				return (CubeLet->GetActorLocation().Z - this->GetActorLocation().Z) == PlaneOffset;
-
-			default:
-				return false;
-		}
-	};
-	for (AMCubeLet* CubeLet : CubeLets)
-	{
-		if (IsPlanarCube(CubeLet))
-		{
-			CubeLetsInPlane.Add(CubeLet);
-		}
-	}
-	return CubeLetsInPlane;
-}
 
 void AMCube::RotateCube(const float& PlaneRelativeCoordinate)
 {

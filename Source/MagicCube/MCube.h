@@ -43,8 +43,6 @@ public:
 
 	void RotateCube(const float& PlaneRelativeCoordinate);
 
-	TArray<AMCubeLet*> GetAllCubeLetsInPlane(EMCubePlane PlaneType, double PlaneOffset);
-
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
