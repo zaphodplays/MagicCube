@@ -66,7 +66,6 @@ void UTargetingComponent::CycleRotationPlane()
 		return;
 	}
 	EMCubePlane NextPlane = static_cast<EMCubePlane>((static_cast<uint32>(Cube->CurrentPlaneType) + 1) % (static_cast<uint32>(EMCubePlane::AllPlanes)));
-	//Cube->CurrentPlaneType = NextPlane;
 
 	DeSelectRotationPlane();
 	SelectRotationPlane(NextPlane);
@@ -85,34 +84,7 @@ void UTargetingComponent::RotateCubePlane(const float& PlaneRelativeCoordinate)
 {
 	if (Cube.IsValid())
 	{
-		if (!IsValid(Cube->GetSelectedCubeLet()))
-		{
-			return;
-		}
-		auto SetRotationValue = [&PlaneRelativeCoordinate](double& RotationValue, const EMCubePlane& ValidRotationPlane, const EMCubePlane& CurrentRotationPlane)
-		{
-			int Sign = PlaneRelativeCoordinate == 0 ? 0 : PlaneRelativeCoordinate > 0 ? 1 : -1;
-			RotationValue = CurrentRotationPlane == ValidRotationPlane ? Sign * 10.f : 0.f;
-		};
-		
-		FRotator DeltaRot = FRotator(0, 0, 0);
-		SetRotationValue(DeltaRot.Pitch, EMCubePlane::YPlane, Cube->CurrentPlaneType);
-		SetRotationValue(DeltaRot.Yaw, EMCubePlane::ZPlane, Cube->CurrentPlaneType);
-		SetRotationValue(DeltaRot.Roll, EMCubePlane::XPlane, Cube->CurrentPlaneType);
-		
-		Cube->GetRootComponent()->AddRelativeRotation(DeltaRot, false, nullptr, ETeleportType::TeleportPhysics);
-		FRotator CurrentRot = Cube->GetRootComponent()->GetRelativeRotation();
-		auto QuantizeRotation = [](double& RotationValue)
-		{
-			if (static_cast<int>(RotationValue) % 90 <= 1.0f)
-			{
-				RotationValue = static_cast<int>(RotationValue);
-			}
-		};
-		QuantizeRotation(CurrentRot.Pitch);
-		QuantizeRotation(CurrentRot.Yaw);
-		QuantizeRotation(CurrentRot.Roll);
-		Cube->GetRootComponent()->SetRelativeRotation(CurrentRot, false, nullptr, ETeleportType::TeleportPhysics);
+		Cube->RotateCube(PlaneRelativeCoordinate);
 	}
 }
 

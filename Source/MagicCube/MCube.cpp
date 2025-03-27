@@ -85,21 +85,25 @@ void AMCube::ActivateRotationPlane( const EMCubePlane& PlaneType)
 			return false;
 		}
 	};
-	
+	auto JoinCubeLetsInPlane = [this](AMCubeLet* CubeLetInPlane)
+	{
+		SelectedCubeLetsInPlane.Add(CubeLetInPlane);
+		CubeLetInPlane->MakeItShine(true);
+		FVector RelativeLocation = CubeLetInPlane->GetRootComponent()->GetRelativeLocation() - GetRootComponent()->GetRelativeLocation();
+		CubeLetInPlane->GetRootComponent()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
+		CubeLetInPlane->GetCoreMesh()->WeldTo(GetCoreMesh(), NAME_None, true);
+	};
 	CurrentPlaneType = PlaneType;
 	AMCubeLet* CubeLet = GetSelectedCubeLet();
 	for (AMCubeLet* CubeLetInPlane : CubeLets)
 	{
-		if (IsPlanarCube(CubeLetInPlane))
+		if (CubeLet != CubeLetInPlane && IsPlanarCube(CubeLetInPlane))
 		{
-			SelectedCubeLetsInPlane.Add(CubeLetInPlane);
-			CubeLetInPlane->MakeItShine(true);
-			const FVector RelativeLocation = CubeLetInPlane->GetRootComponent()->GetComponentLocation() - GetRootComponent()->GetComponentLocation();
-			CubeLetInPlane->GetRootComponent()->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepWorldTransform);
-			//CubeLetInPlane->GetRootComponent()->SetRelativeLocation(RelativeLocation, false, nullptr, ETeleportType::TeleportPhysics);
-			CubeLetInPlane->GetCoreMesh()->WeldTo(GetCoreMesh());
+			JoinCubeLetsInPlane(CubeLetInPlane);
 		}
 	}
+	JoinCubeLetsInPlane(CubeLet);
+	
 	
 }
 
@@ -153,5 +157,38 @@ TArray<AMCubeLet*> AMCube::GetAllCubeLetsInPlane(EMCubePlane PlaneType, double P
 	}
 	return CubeLetsInPlane;
 }
+
+void AMCube::RotateCube(const float& PlaneRelativeCoordinate)
+{
+	if (!IsValid(GetSelectedCubeLet()))
+	{
+		return;
+	}
+	auto SetRotationValue = [&PlaneRelativeCoordinate](double& RotationValue, const EMCubePlane& ValidRotationPlane, const EMCubePlane& CurrentRotationPlane)
+	{
+		const int Sign = PlaneRelativeCoordinate == 0 ? 0 : PlaneRelativeCoordinate > 0 ? 1 : -1;
+		RotationValue = CurrentRotationPlane == ValidRotationPlane ? Sign * 2.f : 0.f;
+	};
+		
+	FRotator DeltaRot = FRotator(0, 0, 0);
+	SetRotationValue(DeltaRot.Pitch, EMCubePlane::YPlane, CurrentPlaneType);
+	SetRotationValue(DeltaRot.Yaw, EMCubePlane::ZPlane, CurrentPlaneType);
+	SetRotationValue(DeltaRot.Roll, EMCubePlane::XPlane, CurrentPlaneType);
+		
+	GetRootComponent()->AddRelativeRotation(DeltaRot, false, nullptr, ETeleportType::TeleportPhysics);
+	FRotator CurrentRot = GetRootComponent()->GetRelativeRotation();
+	auto QuantizeRotation = [](double& RotationValue)
+	{
+		if (static_cast<int>(RotationValue) % 90 <= 2.5)
+		{
+			RotationValue = static_cast<int>(RotationValue);
+		}
+	};
+	QuantizeRotation(CurrentRot.Pitch);
+	QuantizeRotation(CurrentRot.Yaw);
+	QuantizeRotation(CurrentRot.Roll);
+	GetRootComponent()->SetRelativeRotation(CurrentRot, false, nullptr, ETeleportType::TeleportPhysics);
+}
+
 
 

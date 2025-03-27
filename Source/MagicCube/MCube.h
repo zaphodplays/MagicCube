@@ -41,6 +41,8 @@ public:
 
 	void DeActivateRotationPlane();
 
+	void RotateCube(const float& PlaneRelativeCoordinate);
+
 	TArray<AMCubeLet*> GetAllCubeLetsInPlane(EMCubePlane PlaneType, double PlaneOffset);
 
 protected:
