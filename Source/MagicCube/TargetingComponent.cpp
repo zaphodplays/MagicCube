@@ -42,7 +42,7 @@ void UTargetingComponent::SelectCubeLet()
 			{
 				if (IsValid(Cube->GetSelectedCubeLet()))
 				{
-					return;
+					Cube->UnSelectCubeLet();
 				}
 				Cube->SelectCubeLet(CubeLet->GetCubeLetID(), true);
 				SelectRotationPlane(EMCubePlane::ZPlane);
@@ -52,6 +52,7 @@ void UTargetingComponent::SelectCubeLet()
 	}
 	
 }
+
 
 void UTargetingComponent::SelectRotationPlane(const EMCubePlane& PlaneAxis)
 {
@@ -67,6 +68,7 @@ void UTargetingComponent::CycleRotationPlane()
 	}
 	EMCubePlane NextPlane = static_cast<EMCubePlane>((static_cast<uint32>(Cube->CurrentPlaneType) + 1) % (static_cast<uint32>(EMCubePlane::AllPlanes)));
 
+	Cube->SnapToAlignment();
 	DeSelectRotationPlane();
 	SelectRotationPlane(NextPlane);
 }
@@ -85,6 +87,14 @@ void UTargetingComponent::RotateCubePlane(const float& PlaneRelativeCoordinate)
 	if (Cube.IsValid())
 	{
 		Cube->RotateCube(PlaneRelativeCoordinate);
+	}
+}
+
+void UTargetingComponent::FinishRotation()
+{
+	if (Cube.IsValid())
+	{
+		Cube->SnapToClosestRubicPlane();
 	}
 }
 
@@ -107,7 +117,7 @@ AActor* UTargetingComponent::GetActorUnderCrosshair() const
 	FVector End = Start + (WorldDirection * 4000.0f);
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Controller->GetPawn());
-	DrawDebugLine(this->GetWorld(), Start, End, FColor::Red, false, 1.0, 0, 3.0);
+	DrawDebugLine(this->GetWorld(), Start, End, FColorList::Goldenrod, false, 1.0, 0, 2.0);
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_WorldDynamic, Params))
 	{
 		return HitResult.GetActor();

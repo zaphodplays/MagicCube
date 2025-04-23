@@ -74,6 +74,8 @@ void AMagicCubeCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInput
 
 		EnhancedInputComponent->BindAction(RotateCubeAction, ETriggerEvent::Triggered, this, &AMagicCubeCharacter::RotateCube);
 
+		EnhancedInputComponent->BindAction(StopRotateCubeAction, ETriggerEvent::Triggered, this, &AMagicCubeCharacter::StopRotateCube);
+
 		EnhancedInputComponent->BindAction(CycleRotationAction, ETriggerEvent::Triggered, this, &AMagicCubeCharacter::CycleRotationPlane);
 	}
 	else
@@ -124,6 +126,14 @@ void AMagicCubeCharacter::RotateCube(const FInputActionValue& Value)
 	if (AMagicPlayerController* MagicPlayerController = Cast<AMagicPlayerController>(Controller))
 	{
 		MagicPlayerController->RotateCube(LookAxisVector);
+	}
+}
+
+void AMagicCubeCharacter::StopRotateCube(const FInputActionValue& Value)
+{
+	if (AMagicPlayerController* MagicPlayerController = Cast<AMagicPlayerController>(Controller))
+	{
+		MagicPlayerController->StopRotateCube();
 	}
 }
 

@@ -36,12 +36,18 @@ public:
 
 	UFUNCTION()
 	AMCubeLet* GetSelectedCubeLet();
+
+	void UnSelectCubeLet();
 	
 	void ActivateRotationPlane(const EMCubePlane& PlaneType);
 
 	void DeActivateRotationPlane();
 
 	void RotateCube(const float& PlaneRelativeCoordinate);
+
+	void SnapToAlignment();
+
+	void SnapToClosestRubicPlane();
 
 protected:
 	// Called when the game starts or when spawned
@@ -68,6 +74,9 @@ private:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	TArray<AMCubeLet*> SelectedCubeLetsInPlane;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
+	int CurrentPlaneCenterCubeLetID;
 
 public:
 
@@ -129,5 +138,8 @@ public:
 	TArray<FMagicCubeLetInfo> CubeLetsInfo;
 	
 	EMCubePlane CurrentPlaneType = EMCubePlane::AllPlanes;
+
 	
 };
+
+

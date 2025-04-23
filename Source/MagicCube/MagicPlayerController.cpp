@@ -28,6 +28,11 @@ void AMagicPlayerController::RotateCube(const FVector2D& RotateAxis)
 		TargetingComponent->RotateCubePlane(RotateAxis.Y);
 }
 
+void AMagicPlayerController::StopRotateCube()
+{
+	TargetingComponent->FinishRotation();
+}
+
 void AMagicPlayerController::CycleRotationPlane()
 {
 	TargetingComponent->CycleRotationPlane();

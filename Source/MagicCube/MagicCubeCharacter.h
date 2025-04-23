@@ -57,6 +57,9 @@ class AMagicCubeCharacter : public ACharacter
 	class UInputAction* RotateCubeAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* StopRotateCubeAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* DropAction;
 
 	
@@ -75,6 +78,7 @@ protected:
 
 	// Rotate Cube 
 	void RotateCube(const FInputActionValue& Value);
+	void StopRotateCube(const FInputActionValue& Value);
 
 	void CycleRotationPlane(const FInputActionValue& Value);
 

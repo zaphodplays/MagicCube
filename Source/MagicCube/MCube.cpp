@@ -66,21 +66,37 @@ AMCubeLet* AMCube::GetSelectedCubeLet()
 	return SelectedCubeLetID != INDEX_NONE ? CubeLets[SelectedCubeLetID] : nullptr;
 }
 
+void AMCube::UnSelectCubeLet()
+{
+	DeActivateRotationPlane();
+	SelectedCubeLetID = -1;
+}
+
 void AMCube::ActivateRotationPlane( const EMCubePlane& PlaneType)
 {
 	auto IsPlanarCube = [this, &PlaneType](const AMCubeLet* CubeLet)->bool
 	{
 		switch (PlaneType)
 		{
+			int RelativeDimension, RelativeDimension0;
 		case EMCubePlane::XPlane:
-			return (CubeLet->GetActorLocation().X - this->GetActorLocation().X) == CubeLets[SelectedCubeLetID]->GetActorLocation().X - this->GetActorLocation().X;
-
+			RelativeDimension = round(CubeLet->GetActorLocation().X - this->GetActorLocation().X);
+			RelativeDimension0 = round(CubeLets[SelectedCubeLetID]->GetActorLocation().X - this->GetActorLocation().X);
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColorList::Coral, FString::Printf(TEXT("Is same Plane: RelativeX = %d, RelativeX0 = %d"), RelativeDimension, RelativeDimension0));
+			return RelativeDimension == RelativeDimension0;
+			
 		case EMCubePlane::YPlane:
-			return (CubeLet->GetActorLocation().Y - this->GetActorLocation().Y) == CubeLets[SelectedCubeLetID]->GetActorLocation().Y - this->GetActorLocation().Y;
-
+			RelativeDimension  = round(CubeLet->GetActorLocation().Y - this->GetActorLocation().Y);
+			RelativeDimension0 = round(CubeLets[SelectedCubeLetID]->GetActorLocation().Y - this->GetActorLocation().Y);
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColorList::Coral, FString::Printf(TEXT("Is same Plane: RelativeY = %d, RelativeY0 = %d"), RelativeDimension, RelativeDimension0));
+			return RelativeDimension == RelativeDimension0;
+			
 		case EMCubePlane::ZPlane:
-			return (CubeLet->GetActorLocation().Z - this->GetActorLocation().Z) == CubeLets[SelectedCubeLetID]->GetActorLocation().Z - this->GetActorLocation().Z;
-
+			RelativeDimension = round(CubeLet->GetActorLocation().Z - this->GetActorLocation().Z);
+			RelativeDimension0 = round(CubeLets[SelectedCubeLetID]->GetActorLocation().Z - this->GetActorLocation().Z);
+			//GEngine->AddOnScreenDebugMessage(-1, 10.f, FColorList::Coral, FString::Printf(TEXT("Is same Plane: RelativeZ = %d, RelativeZ0 = %d"), RelativeDimension, RelativeDimension0));
+			return RelativeDimension == RelativeDimension0;
+			
 		default:
 			return false;
 		}
@@ -104,7 +120,8 @@ void AMCube::ActivateRotationPlane( const EMCubePlane& PlaneType)
 	}
 	JoinCubeLetsInPlane(CubeLet);
 	
-	
+	//DrawDebugDirectionalArrow(GetWorld(), GetActorLocation(), GetActorLocation() + GetRootComponent()->GetForwardVector()*500, 500, FColorList::Green, false, 300, 5);
+	//DrawDebugDirectionalArrow(GetWorld(), CubeLets[SelectedCubeLetID]->GetActorLocation(), CubeLets[SelectedCubeLetID]->GetActorLocation() + CubeLets[SelectedCubeLetID]->GetActorForwardVector()*500, 500, FColorList::Red, false, 300, 5);
 }
 
 void AMCube::DeActivateRotationPlane()
@@ -125,9 +142,30 @@ void AMCube::DeActivateRotationPlane()
 		//CubeLetInPlane->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 	}
 	SelectedCubeLetsInPlane.Empty();
+	//fix - we need to reset the root component back to the rest position so that the rotation axes for root always goes back to home position
+	GetRootComponent()->SetRelativeRotation(FRotator(0, 0, 0));
 	CurrentPlaneType = EMCubePlane::AllPlanes;
 }
 
+
+void AMCube::SnapToAlignment()
+{
+	if (!IsValid(GetSelectedCubeLet()))
+	{
+		return;
+	}
+	auto SetRotationValue = [](double& RotationValue, const EMCubePlane& ValidRotationPlane, const EMCubePlane& CurrentRotationPlane)
+	{
+		int Delta = static_cast<int>(RotationValue) % 90;
+		RotationValue = Delta >= 0 ? (Delta > 45 ? 90 - Delta : -Delta) : (Delta < -45 ? -90 - Delta : - Delta);
+	};
+	
+	FRotator RelativeRotation = GetRootComponent()->GetRelativeRotation();
+	SetRotationValue(RelativeRotation.Pitch, EMCubePlane::YPlane, CurrentPlaneType);
+	SetRotationValue(RelativeRotation.Yaw, EMCubePlane::ZPlane, CurrentPlaneType);
+	SetRotationValue(RelativeRotation.Roll, EMCubePlane::XPlane, CurrentPlaneType);
+	GetRootComponent()->AddRelativeRotation(RelativeRotation);
+}
 
 
 void AMCube::RotateCube(const float& PlaneRelativeCoordinate)
@@ -143,19 +181,39 @@ void AMCube::RotateCube(const float& PlaneRelativeCoordinate)
 	};
 		
 	FRotator DeltaRot = FRotator(0, 0, 0);
+
+	auto GetRotationType = [this]()-> void
+	{
+		const FRotator& RRR = CubeLets[SelectedCubeLetID]->GetRootComponent()->GetRelativeRotation();
+		//GEngine->AddOnScreenDebugMessage(-1, 20.f, FColorList::BrightGold, FString::Printf(TEXT("Relative Root Rotation: Pitch: %f, Yaw: %f, Roll: %f"), RRR.Pitch, RRR.Yaw, RRR.Roll));
+	};
+	GetRotationType();
 	SetRotationValue(DeltaRot.Pitch, EMCubePlane::YPlane, CurrentPlaneType);
 	SetRotationValue(DeltaRot.Yaw, EMCubePlane::ZPlane, CurrentPlaneType);
 	SetRotationValue(DeltaRot.Roll, EMCubePlane::XPlane, CurrentPlaneType);
-		
-	GetRootComponent()->AddRelativeRotation(DeltaRot, false, nullptr, ETeleportType::TeleportPhysics);
+
+	GetRootComponent()->AddRelativeRotation(DeltaRot);
+	
+}
+
+void AMCube::SnapToClosestRubicPlane()
+{
+	if (!IsValid(GetSelectedCubeLet()))
+	{
+		return;
+	}
+	
 	FRotator CurrentRot = GetRootComponent()->GetRelativeRotation();
 	auto QuantizeRotation = [](double& RotationValue)
 	{
-		if (static_cast<int>(RotationValue) % 90 <= 2.5)
+		float AbsRotationValue = abs(RotationValue);
+		if (static_cast<int>(AbsRotationValue) % 90 <= 2.5)
 		{
-			RotationValue = static_cast<int>(RotationValue);
+			int value = static_cast<int>(AbsRotationValue - (static_cast<int>(AbsRotationValue) % 90));
+			RotationValue = RotationValue >= 0.f ? value : - value; 
 		}
 	};
+	
 	QuantizeRotation(CurrentRot.Pitch);
 	QuantizeRotation(CurrentRot.Yaw);
 	QuantizeRotation(CurrentRot.Roll);

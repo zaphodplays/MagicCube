@@ -23,6 +23,8 @@ public:
 	
 	void RotateCubePlane(const float& PlaneRelativeCoordinate);
 
+	void FinishRotation();
+
 	void SelectRotationPlane(const EMCubePlane& PlaneAxis);
 
 	void DeSelectRotationPlane();

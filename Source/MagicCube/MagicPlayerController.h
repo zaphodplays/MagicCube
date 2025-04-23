@@ -28,6 +28,9 @@ public:
 	void RotateCube(const FVector2D& RotateAxis);
 
 	UFUNCTION(BlueprintCallable)
+	void StopRotateCube();
+
+	UFUNCTION(BlueprintCallable)
 	void CycleRotationPlane();
 
 protected:
