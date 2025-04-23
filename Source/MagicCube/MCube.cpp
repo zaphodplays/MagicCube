@@ -68,6 +68,7 @@ AMCubeLet* AMCube::GetSelectedCubeLet()
 
 void AMCube::UnSelectCubeLet()
 {
+	SnapToAlignment();
 	DeActivateRotationPlane();
 	SelectedCubeLetID = -1;
 }

@@ -119,7 +119,7 @@ AActor* UTargetingComponent::GetActorUnderCrosshair() const
 	FVector End = Start + (WorldDirection * 4000.0f);
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Controller->GetPawn());
-	DrawDebugLine(this->GetWorld(), Start, End, FColorList::Goldenrod, false, 1.0, 0, 2.0);
+	//DrawDebugLine(this->GetWorld(), Start, End, FColorList::Goldenrod, false, 1.0, 0, 2.0);
 	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_WorldDynamic, Params))
 	{
 		return HitResult.GetActor();
