@@ -66,9 +66,10 @@ void UTargetingComponent::CycleRotationPlane()
 	{
 		return;
 	}
-	EMCubePlane NextPlane = static_cast<EMCubePlane>((static_cast<uint32>(Cube->CurrentPlaneType) + 1) % (static_cast<uint32>(EMCubePlane::AllPlanes)));
+	
 
 	Cube->SnapToAlignment();
+	EMCubePlane NextPlane = static_cast<EMCubePlane>((static_cast<uint32>(Cube->CurrentPlaneType) + 1) % (static_cast<uint32>(EMCubePlane::AllPlanes)));
 	DeSelectRotationPlane();
 	SelectRotationPlane(NextPlane);
 }
@@ -94,7 +95,8 @@ void UTargetingComponent::FinishRotation()
 {
 	if (Cube.IsValid())
 	{
-		Cube->SnapToClosestRubicPlane();
+		//Cube->SnapToClosestRubicPlane();
+		Cube->SnapToAlignment();
 	}
 }
 
